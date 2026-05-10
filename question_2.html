@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Question 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="global.css">
+<script defer src="global.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body class="notebook-page">
+<main>
+<header>
+<div class="title-row">
+<h1>Question 2</h1>
+<a class="home-link" href="index.html">Home</a>
+</div>
+<div class="toolbar" aria-label="Notebook section controls">
+<button type="button" data-section-action="expand">Expand all</button>
+<button type="button" data-section-action="collapse">Collapse all</button>
+</div>
+</header>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Substitution Matrix</span></summary><div class="section-content">
+<section class="markdown-cell"><p>This is the helper for generating a simple substitution matrix: all matches and mismatches are given the same score; it&#x27;s not specific to different symbols (though such matrices can be created manually).</p></section>
+<section class="notebook-cell"><div class="cell-prompt">In [1]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">make_substitution_matrix</span><span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">match_score</span><span class="p">,</span> <span class="n">mismatch_score</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">letter1</span><span class="p">:</span> <span class="p">{</span>
+            <span class="n">letter2</span><span class="p">:</span> <span class="n">match_score</span> <span class="k">if</span> <span class="n">letter1</span> <span class="o">==</span> <span class="n">letter2</span> <span class="k">else</span> <span class="n">mismatch_score</span>
+            <span class="k">for</span> <span class="n">letter2</span> <span class="ow">in</span> <span class="n">alphabet</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">letter1</span> <span class="ow">in</span> <span class="n">alphabet</span>
+    <span class="p">}</span>
+</code></pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [2]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">substitution_matrix</span> <span class="o">=</span> <span class="n">make_substitution_matrix</span><span class="p">(</span><span class="s2">&quot;ACGT&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">substitution_matrix</span>
+</code></pre></div><div class="outputs"><pre class="output-text">{&#x27;A&#x27;: {&#x27;A&#x27;: 1, &#x27;C&#x27;: -2, &#x27;G&#x27;: -2, &#x27;T&#x27;: -2},
+ &#x27;C&#x27;: {&#x27;A&#x27;: -2, &#x27;C&#x27;: 1, &#x27;G&#x27;: -2, &#x27;T&#x27;: -2},
+ &#x27;G&#x27;: {&#x27;A&#x27;: -2, &#x27;C&#x27;: -2, &#x27;G&#x27;: 1, &#x27;T&#x27;: -2},
+ &#x27;T&#x27;: {&#x27;A&#x27;: -2, &#x27;C&#x27;: -2, &#x27;G&#x27;: -2, &#x27;T&#x27;: 1}}</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Move Choice</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [3]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">choose_best_move</span><span class="p">(</span><span class="n">diagonal</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span> <span class="n">left</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">diagonal</span> <span class="o">&gt;=</span> <span class="n">up</span> <span class="ow">and</span> <span class="n">diagonal</span> <span class="o">&gt;=</span> <span class="n">left</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">diagonal</span><span class="p">,</span> <span class="s2">&quot;diagonal&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">up</span><span class="p">,</span> <span class="s2">&quot;up&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">up</span> <span class="o">&gt;=</span> <span class="n">left</span> <span class="k">else</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">)</span>
+</code></pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [4]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">choose_best_move</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">)</span>
+</code></pre></div><div class="outputs"><pre class="output-text">(-2, &#x27;diagonal&#x27;)</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Matrix Filling</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [5]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">fill_matrix</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">substitution_matrix</span><span class="p">,</span> <span class="n">gap_cost</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+    <span class="n">rows</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">score_matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">columns</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">)]</span>
+    <span class="n">trace_matrix</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">columns</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">)]</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;global&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
+            <span class="n">trace_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;up&quot;</span>
+            <span class="n">score_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">i</span> <span class="o">*</span> <span class="n">gap_cost</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+            <span class="n">trace_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span>
+            <span class="n">score_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">j</span> <span class="o">*</span> <span class="n">gap_cost</span>
+
+    <span class="n">best_i</span> <span class="o">=</span> <span class="n">best_j</span> <span class="o">=</span> <span class="n">best_score</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+            <span class="n">diagonal</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">score_matrix</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">substitution_matrix</span><span class="p">[</span><span class="n">seq1</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]][</span><span class="n">seq2</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]]</span>
+            <span class="p">)</span>
+            <span class="n">up</span> <span class="o">=</span> <span class="n">score_matrix</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">gap_cost</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="n">score_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">gap_cost</span>
+            <span class="n">score</span><span class="p">,</span> <span class="n">direction</span> <span class="o">=</span> <span class="n">choose_best_move</span><span class="p">(</span><span class="n">diagonal</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;local&quot;</span> <span class="ow">and</span> <span class="n">score</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">score</span><span class="p">,</span> <span class="n">direction</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+
+            <span class="n">score_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="n">trace_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">score</span><span class="p">,</span> <span class="n">direction</span>
+
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;local&quot;</span> <span class="ow">and</span> <span class="n">score</span> <span class="o">&gt;</span> <span class="n">best_score</span><span class="p">:</span>
+                <span class="n">best_i</span><span class="p">,</span> <span class="n">best_j</span><span class="p">,</span> <span class="n">best_score</span> <span class="o">=</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">score</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;global&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">score_matrix</span><span class="p">,</span> <span class="n">trace_matrix</span><span class="p">,</span> <span class="n">rows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">columns</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">score_matrix</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">score_matrix</span><span class="p">,</span> <span class="n">trace_matrix</span><span class="p">,</span> <span class="n">best_i</span><span class="p">,</span> <span class="n">best_j</span><span class="p">,</span> <span class="n">best_score</span>
+</code></pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [6]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">global_score_matrix</span><span class="p">,</span> <span class="n">global_trace_matrix</span><span class="p">,</span> <span class="n">global_i</span><span class="p">,</span> <span class="n">global_j</span><span class="p">,</span> <span class="n">global_score</span> <span class="o">=</span> <span class="n">fill_matrix</span><span class="p">(</span>
+    <span class="s2">&quot;AGGACT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GTGAGT&quot;</span><span class="p">,</span>
+    <span class="n">substitution_matrix</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;global&quot;</span>
+<span class="p">)</span>
+<span class="n">global_score_matrix</span>
+</code></pre></div><div class="outputs"><pre class="output-text">[[0, -2, -4, -6, -8, -10, -12],
+ [-2, -2, -4, -6, -5, -7, -9],
+ [-4, -1, -3, -3, -5, -4, -6],
+ [-6, -3, -3, -2, -4, -4, -6],
+ [-8, -5, -5, -4, -1, -3, -5],
+ [-10, -7, -7, -6, -3, -3, -5],
+ [-12, -9, -6, -8, -5, -5, -2]]</pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [7]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">local_score_matrix</span><span class="p">,</span> <span class="n">local_trace_matrix</span><span class="p">,</span> <span class="n">local_i</span><span class="p">,</span> <span class="n">local_j</span><span class="p">,</span> <span class="n">local_score</span> <span class="o">=</span> <span class="n">fill_matrix</span><span class="p">(</span>
+    <span class="s2">&quot;AGGACT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GTGAGT&quot;</span><span class="p">,</span>
+    <span class="n">substitution_matrix</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;local&quot;</span>
+<span class="p">)</span>
+<span class="n">local_score_matrix</span>
+</code></pre></div><div class="outputs"><pre class="output-text">[[0, 0, 0, 0, 0, 0, 0],
+ [0, 0, 0, 0, 1, 0, 0],
+ [0, 1, 0, 1, 0, 2, 0],
+ [0, 1, 0, 1, 0, 1, 0],
+ [0, 0, 0, 0, 2, 0, 0],
+ [0, 0, 0, 0, 0, 0, 0],
+ [0, 0, 1, 0, 0, 0, 1]]</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Traceback</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [8]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">traceback</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">trace_matrix</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+    <span class="n">aligned1</span><span class="p">,</span> <span class="n">aligned2</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;local&quot;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">break</span>
+
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">trace_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;diagonal&quot;</span><span class="p">:</span>
+            <span class="n">aligned1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seq1</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">aligned2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seq2</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;up&quot;</span><span class="p">:</span>
+            <span class="n">aligned1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seq1</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">aligned2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;left&quot;</span><span class="p">:</span>
+            <span class="n">aligned1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+            <span class="n">aligned2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seq2</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">j</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="n">aligned1</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+    <span class="n">aligned2</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">aligned1</span><span class="p">),</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">aligned2</span><span class="p">)</span>
+</code></pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [9]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">traceback</span><span class="p">(</span><span class="s2">&quot;AGGACT&quot;</span><span class="p">,</span> <span class="s2">&quot;GTGAGT&quot;</span><span class="p">,</span> <span class="n">global_trace_matrix</span><span class="p">,</span> <span class="n">global_i</span><span class="p">,</span> <span class="n">global_j</span><span class="p">,</span> <span class="s2">&quot;global&quot;</span><span class="p">)</span>
+</code></pre></div><div class="outputs"><pre class="output-text">(&#x27;AG-GACT&#x27;, &#x27;-GTGAGT&#x27;)</pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [10]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">traceback</span><span class="p">(</span><span class="s2">&quot;AGGACT&quot;</span><span class="p">,</span> <span class="s2">&quot;GTGAGT&quot;</span><span class="p">,</span> <span class="n">local_trace_matrix</span><span class="p">,</span> <span class="n">local_i</span><span class="p">,</span> <span class="n">local_j</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">)</span>
+</code></pre></div><div class="outputs"><pre class="output-text">(&#x27;AG&#x27;, &#x27;AG&#x27;)</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Alignment Functions</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [11]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">align</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">substitution_matrix</span><span class="p">,</span> <span class="n">gap_cost</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">trace_matrix</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">fill_matrix</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">substitution_matrix</span><span class="p">,</span> <span class="n">gap_cost</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">traceback</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">trace_matrix</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">mode</span><span class="p">),</span> <span class="n">score</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">needleman_wunsch</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">substitution_matrix</span><span class="p">,</span> <span class="n">gap_cost</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">align</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">substitution_matrix</span><span class="p">,</span> <span class="n">gap_cost</span><span class="p">,</span> <span class="s2">&quot;global&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">smith_waterman</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">substitution_matrix</span><span class="p">,</span> <span class="n">gap_cost</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">align</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">substitution_matrix</span><span class="p">,</span> <span class="n">gap_cost</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">)</span>
+</code></pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [12]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">needleman_wunsch</span><span class="p">(</span><span class="s2">&quot;AGGACT&quot;</span><span class="p">,</span> <span class="s2">&quot;GTGAGT&quot;</span><span class="p">,</span> <span class="n">substitution_matrix</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</code></pre></div><div class="outputs"><pre class="output-text">(&#x27;AG-GACT&#x27;, &#x27;-GTGAGT&#x27;, -2)</pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [13]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">smith_waterman</span><span class="p">(</span><span class="s2">&quot;AGGACT&quot;</span><span class="p">,</span> <span class="s2">&quot;GTGAGT&quot;</span><span class="p">,</span> <span class="n">substitution_matrix</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</code></pre></div><div class="outputs"><pre class="output-text">(&#x27;AG&#x27;, &#x27;AG&#x27;, 2)</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Testing Helper</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [14]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">get_match_line</span><span class="p">(</span><span class="n">aligned1</span><span class="p">,</span> <span class="n">aligned2</span><span class="p">):</span>
+    <span class="n">match_line</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">letter1</span><span class="p">,</span> <span class="n">letter2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">aligned1</span><span class="p">,</span> <span class="n">aligned2</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">letter1</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span> <span class="ow">or</span> <span class="n">letter2</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+            <span class="n">match_line</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">letter1</span> <span class="o">==</span> <span class="n">letter2</span><span class="p">:</span>
+            <span class="n">match_line</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">match_line</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">match_line</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">display_alignment</span><span class="p">(</span><span class="n">aligned1</span><span class="p">,</span> <span class="n">aligned2</span><span class="p">,</span> <span class="n">score</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">aligned1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">get_match_line</span><span class="p">(</span><span class="n">aligned1</span><span class="p">,</span> <span class="n">aligned2</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">aligned2</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Score: </span><span class="si">{</span><span class="n">score</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_example</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">,</span> <span class="n">match_score</span><span class="p">,</span> <span class="n">mismatch_score</span><span class="p">,</span> <span class="n">gap_cost</span><span class="p">):</span>
+    <span class="n">substitution_matrix</span> <span class="o">=</span> <span class="n">make_substitution_matrix</span><span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">match_score</span><span class="p">,</span> <span class="n">mismatch_score</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">72</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sequence 1: </span><span class="si">{</span><span class="n">seq1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sequence 2: </span><span class="si">{</span><span class="n">seq2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Gap cost: </span><span class="si">{</span><span class="n">gap_cost</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Needleman-Wunsch global alignment&quot;</span><span class="p">)</span>
+    <span class="n">display_alignment</span><span class="p">(</span><span class="o">*</span><span class="n">needleman_wunsch</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">substitution_matrix</span><span class="p">,</span> <span class="n">gap_cost</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Smith-Waterman local alignment&quot;</span><span class="p">)</span>
+    <span class="n">display_alignment</span><span class="p">(</span><span class="o">*</span><span class="n">smith_waterman</span><span class="p">(</span><span class="n">seq1</span><span class="p">,</span> <span class="n">seq2</span><span class="p">,</span> <span class="n">substitution_matrix</span><span class="p">,</span> <span class="n">gap_cost</span><span class="p">))</span>
+</code></pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Test Inputs</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [15]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">examples</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span>
+        <span class="s2">&quot;Example 1: short DNA sequences from the assignment&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;AGGACT&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;GTGAGT&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ACGT&quot;</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">2</span><span class="p">,</span>
+        <span class="mi">2</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s2">&quot;Example 2: one internal deletion&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ACGTCGTA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ACGCGTA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ACGT&quot;</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="mi">2</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s2">&quot;Example 3: shared high-scoring local motif&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;TTTACCGTACGG&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;GGGACCGTAAAC&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ACGT&quot;</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">3</span><span class="p">,</span>
+        <span class="mi">2</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s2">&quot;Example 4: different simple DNA scoring matrix&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;GATTACA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;GCATGCA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ACGT&quot;</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="mi">2</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s2">&quot;Example 5: protein-like sequences&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;HEAGAWGHEE&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;PAWHEAE&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;AEGHPW&quot;</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="mi">2</span>
+    <span class="p">)</span>
+<span class="p">]</span>
+</code></pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Example 1</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [16]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">run_example</span><span class="p">(</span><span class="o">*</span><span class="n">examples</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</code></pre></div><div class="outputs"><pre class="output-text">========================================================================
+Example 1: short DNA sequences from the assignment
+Sequence 1: AGGACT
+Sequence 2: GTGAGT
+Gap cost: 2
+
+Needleman-Wunsch global alignment
+AG-GACT
+ | ||.|
+-GTGAGT
+Score: -2
+
+Smith-Waterman local alignment
+AG
+||
+AG
+Score: 2</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Example 2</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [17]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">run_example</span><span class="p">(</span><span class="o">*</span><span class="n">examples</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</code></pre></div><div class="outputs"><pre class="output-text">========================================================================
+Example 2: one internal deletion
+Sequence 1: ACGTCGTA
+Sequence 2: ACGCGTA
+Gap cost: 2
+
+Needleman-Wunsch global alignment
+ACGTCGTA
+||| ||||
+ACG-CGTA
+Score: 12
+
+Smith-Waterman local alignment
+ACGTCGTA
+||| ||||
+ACG-CGTA
+Score: 12</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Example 3</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [18]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">run_example</span><span class="p">(</span><span class="o">*</span><span class="n">examples</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+</code></pre></div><div class="outputs"><pre class="output-text">========================================================================
+Example 3: shared high-scoring local motif
+Sequence 1: TTTACCGTACGG
+Sequence 2: GGGACCGTAAAC
+Gap cost: 2
+
+Needleman-Wunsch global alignment
+TTTACCGT--ACGG
+...|||||  ||  
+GGGACCGTAAAC--
+Score: 4
+
+Smith-Waterman local alignment
+ACCGTA
+||||||
+ACCGTA
+Score: 18</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Example 4</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [19]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">run_example</span><span class="p">(</span><span class="o">*</span><span class="n">examples</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+</code></pre></div><div class="outputs"><pre class="output-text">========================================================================
+Example 4: different simple DNA scoring matrix
+Sequence 1: GATTACA
+Sequence 2: GCATGCA
+Gap cost: 2
+
+Needleman-Wunsch global alignment
+GATTACA
+|..|.||
+GCATGCA
+Score: 5
+
+Smith-Waterman local alignment
+TACA
+|.||
+TGCA
+Score: 5</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Example 5</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [20]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">run_example</span><span class="p">(</span><span class="o">*</span><span class="n">examples</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+</code></pre></div><div class="outputs"><pre class="output-text">========================================================================
+Example 5: protein-like sequences
+Sequence 1: HEAGAWGHEE
+Sequence 2: PAWHEAE
+Gap cost: 2
+
+Needleman-Wunsch global alignment
+HEAGAWGHE-E
+   .|| || |
+---PAW-HEAE
+Score: -1
+
+Smith-Waterman local alignment
+HEA
+|||
+HEA
+Score: 6</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Manual Workthrough</span></summary><div class="section-content">
+<details class="collapsible-section level-3" open><summary><span class="section-title">Needleman-Wunsch example</span></summary><div class="section-content">
+<section class="markdown-cell"><p>The first example aligns:</p>
+<div class="math-display">$$
+x=\texttt{AGGACT}
+$$</div>
+<div class="math-display">$$
+y=\texttt{GTGAGT}
+$$</div>
+<p>The scoring scheme is:</p>
+<div class="math-display">$$
+s(a,b)=
+\begin{cases}
+1, &amp; \text{if } a=b \\
+-2, &amp; \text{if } a\ne b
+\end{cases}
+\quad\text{and}\quad g=2
+$$</div>
+<p>For global alignment, leading and trailing gaps are part of the score. Therefore, the first row and first column contain accumulated gap penalties.</p>
+<p>For cell $(1,1)$, the letters are <code>A</code> and <code>G</code>:</p>
+<div class="math-display">$$
+d_{1,1}=0-2=-2,\quad u_{1,1}=-2-2=-4,\quad l_{1,1}=-2-2=-4
+$$</div>
+<div class="math-display">$$
+H_{1,1}=\max(-2,-4,-4)=-2
+$$</div>
+<p>For cell $(2,1)$, the letters are <code>G</code> and <code>G</code>:</p>
+<div class="math-display">$$
+d_{2,1}=-2+1=-1,\quad u_{2,1}=-2-2=-4,\quad l_{2,1}=-4-2=-6
+$$</div>
+<div class="math-display">$$
+H_{2,1}=\max(-1,-4,-6)=-1
+$$</div>
+<p>After applying the same rule to every cell, the Needleman-Wunsch score matrix is:</p>
+<div class="table-wrap"><table><thead><tr><th></th><th class="align-right">-</th><th class="align-right">G</th><th class="align-right">T</th><th class="align-right">G</th><th class="align-right">A</th><th class="align-right">G</th><th class="align-right">T</th></tr></thead><tbody><tr><td>-</td><td class="align-right">0</td><td class="align-right">-2</td><td class="align-right">-4</td><td class="align-right">-6</td><td class="align-right">-8</td><td class="align-right">-10</td><td class="align-right">-12</td></tr><tr><td>A</td><td class="align-right">-2</td><td class="align-right">-2</td><td class="align-right">-4</td><td class="align-right">-6</td><td class="align-right">-5</td><td class="align-right">-7</td><td class="align-right">-9</td></tr><tr><td>G</td><td class="align-right">-4</td><td class="align-right">-1</td><td class="align-right">-3</td><td class="align-right">-3</td><td class="align-right">-5</td><td class="align-right">-4</td><td class="align-right">-6</td></tr><tr><td>G</td><td class="align-right">-6</td><td class="align-right">-3</td><td class="align-right">-3</td><td class="align-right">-2</td><td class="align-right">-4</td><td class="align-right">-4</td><td class="align-right">-6</td></tr><tr><td>A</td><td class="align-right">-8</td><td class="align-right">-5</td><td class="align-right">-5</td><td class="align-right">-4</td><td class="align-right">-1</td><td class="align-right">-3</td><td class="align-right">-5</td></tr><tr><td>C</td><td class="align-right">-10</td><td class="align-right">-7</td><td class="align-right">-7</td><td class="align-right">-6</td><td class="align-right">-3</td><td class="align-right">-3</td><td class="align-right">-5</td></tr><tr><td>T</td><td class="align-right">-12</td><td class="align-right">-9</td><td class="align-right">-6</td><td class="align-right">-8</td><td class="align-right">-5</td><td class="align-right">-5</td><td class="align-right">-2</td></tr></tbody></table></div>
+<p>The traceback starts in the bottom-right cell because the full sequences must be aligned:</p>
+<div class="table-wrap"><table><thead><tr><th class="align-right">Step</th><th>Cell</th><th>Direction</th><th>Alignment column</th></tr></thead><tbody><tr><td class="align-right">1</td><td>$(6,6)$</td><td>D</td><td><code>T</code>/<code>T</code></td></tr><tr><td class="align-right">2</td><td>$(5,5)$</td><td>D</td><td><code>C</code>/<code>G</code></td></tr><tr><td class="align-right">3</td><td>$(4,4)$</td><td>D</td><td><code>A</code>/<code>A</code></td></tr><tr><td class="align-right">4</td><td>$(3,3)$</td><td>D</td><td><code>G</code>/<code>G</code></td></tr><tr><td class="align-right">5</td><td>$(2,2)$</td><td>L</td><td><code>-</code>/<code>T</code></td></tr><tr><td class="align-right">6</td><td>$(2,1)$</td><td>D</td><td><code>G</code>/<code>G</code></td></tr><tr><td class="align-right">7</td><td>$(1,0)$</td><td>U</td><td><code>A</code>/<code>-</code></td></tr></tbody></table></div>
+<p>The final global alignment is:</p>
+<pre class="markdown-code"><code>AG-GACT
+ | ||.|
+-GTGAGT
+Score: -2</code></pre>
+<p>The score can be checked directly from the alignment:</p>
+<div class="math-display">$$
+-2 + 1 - 2 + 1 + 1 - 2 + 1 = -2
+$$</div></section>
+</div></details>
+<details class="collapsible-section level-3" open><summary><span class="section-title">Smith-Waterman example</span></summary><div class="section-content">
+<section class="markdown-cell"><p>Smith-Waterman uses the same sequences and scoring scheme, but every cell is also compared to zero. Negative paths are discarded because a local alignment may start later in the sequences.</p>
+<p>For cell $(1,1)$, the letters are <code>A</code> and <code>G</code>:</p>
+<div class="math-display">$$
+d_{1,1}=0-2=-2,\quad u_{1,1}=0-2=-2,\quad l_{1,1}=0-2=-2
+$$</div>
+<div class="math-display">$$
+H_{1,1}=\max(0,-2,-2,-2)=0
+$$</div>
+<p>For cell $(1,4)$, the letters are <code>A</code> and <code>A</code>:</p>
+<div class="math-display">$$
+d_{1,4}=0+1=1,\quad u_{1,4}=0-2=-2,\quad l_{1,4}=0-2=-2
+$$</div>
+<div class="math-display">$$
+H_{1,4}=\max(0,1,-2,-2)=1
+$$</div>
+<p>The complete Smith-Waterman score matrix is:</p>
+<div class="table-wrap"><table><thead><tr><th></th><th class="align-right">-</th><th class="align-right">G</th><th class="align-right">T</th><th class="align-right">G</th><th class="align-right">A</th><th class="align-right">G</th><th class="align-right">T</th></tr></thead><tbody><tr><td>-</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td></tr><tr><td>A</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">1</td><td class="align-right">0</td><td class="align-right">0</td></tr><tr><td>G</td><td class="align-right">0</td><td class="align-right">1</td><td class="align-right">0</td><td class="align-right">1</td><td class="align-right">0</td><td class="align-right">2</td><td class="align-right">0</td></tr><tr><td>G</td><td class="align-right">0</td><td class="align-right">1</td><td class="align-right">0</td><td class="align-right">1</td><td class="align-right">0</td><td class="align-right">1</td><td class="align-right">0</td></tr><tr><td>A</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">2</td><td class="align-right">0</td><td class="align-right">0</td></tr><tr><td>C</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td></tr><tr><td>T</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">1</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">1</td></tr></tbody></table></div>
+<p>The traceback starts at the first best-scoring cell found by the program, which is $(2,5)$ with score 2:</p>
+<div class="table-wrap"><table><thead><tr><th class="align-right">Step</th><th>Cell</th><th>Direction</th><th>Alignment column</th></tr></thead><tbody><tr><td class="align-right">1</td><td>$(2,5)$</td><td>D</td><td><code>G</code>/<code>G</code></td></tr><tr><td class="align-right">2</td><td>$(1,4)$</td><td>D</td><td><code>A</code>/<code>A</code></td></tr></tbody></table></div>
+<p>The final local alignment is:</p>
+<pre class="markdown-code"><code>AG
+||
+AG
+Score: 2</code></pre></section>
+</div></details>
+</div></details>
+</main>
+</body>
+</html>

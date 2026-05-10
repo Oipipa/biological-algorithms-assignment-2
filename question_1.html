@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Question 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="global.css">
+<script defer src="global.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body class="notebook-page">
+<main>
+<header>
+<div class="title-row">
+<h1>Question 1</h1>
+<a class="home-link" href="index.html">Home</a>
+</div>
+<div class="toolbar" aria-label="Notebook section controls">
+<button type="button" data-section-action="expand">Expand all</button>
+<button type="button" data-section-action="collapse">Collapse all</button>
+</div>
+</header>
+<section class="notebook-cell"><div class="cell-prompt">In [1]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+</code></pre></div></div></section>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Reading the Sequences</span></summary><div class="section-content">
+<section class="markdown-cell"><p>The idea is to read aligned sequences from a text file, calculate a position-specific scoring matrix from them, and then score example sequences against that matrix. The first part reads one sequence per line.</p></section>
+<section class="notebook-cell"><div class="cell-prompt">In [2]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">read_sequences</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="n">sequences</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">sequences</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sequences</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input file does not contain any sequences&quot;</span><span class="p">)</span>
+    <span class="n">expected_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">sequences</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">!=</span> <span class="n">expected_length</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;All sequences must have the same length&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sequences</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_alphabet</span><span class="p">(</span><span class="n">sequences</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sequences</span><span class="p">)))</span>
+</code></pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [3]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">read_sequences</span><span class="p">(</span><span class="s2">&quot;../seq1.txt&quot;</span><span class="p">)</span>
+</code></pre></div><div class="outputs"><pre class="output-text">[&#x27;ACGTA&#x27;,
+ &#x27;ACGTT&#x27;,
+ &#x27;ACGAA&#x27;,
+ &#x27;TCGTA&#x27;,
+ &#x27;ACCTA&#x27;,
+ &#x27;AGGTA&#x27;,
+ &#x27;ACGCA&#x27;,
+ &#x27;ACGGA&#x27;,
+ &#x27;CCGTA&#x27;,
+ &#x27;GCGTA&#x27;,
+ &#x27;ATGTA&#x27;,
+ &#x27;AAGTA&#x27;,
+ &#x27;ACATA&#x27;,
+ &#x27;ACTTA&#x27;,
+ &#x27;ACGTC&#x27;,
+ &#x27;ACGTG&#x27;,
+ &#x27;ACGAT&#x27;,
+ &#x27;TCGTT&#x27;,
+ &#x27;ACCAA&#x27;,
+ &#x27;GGGTA&#x27;,
+ &#x27;ATCTA&#x27;,
+ &#x27;ACATT&#x27;,
+ &#x27;CCGTT&#x27;,
+ &#x27;GCGAA&#x27;]</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Assertion Helper</span></summary><div class="section-content">
+<section class="markdown-cell"><p>This helper is used for direct list inputs. It raises <code>TypeError</code> when the input is not a list of strings, and <code>ValueError</code> when the strings do not all have the same length.</p></section>
+<section class="notebook-cell"><div class="cell-prompt">In [4]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">assert_equal_length_strings</span><span class="p">(</span><span class="n">strings</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">strings</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Expected a list of strings&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">strings</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Expected a list of strings&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">strings</span><span class="p">:</span>
+        <span class="n">expected_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">strings</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">strings</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">!=</span> <span class="n">expected_length</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;All strings must have the same length&quot;</span><span class="p">)</span>
+</code></pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Count Matrix</span></summary><div class="section-content">
+<section class="markdown-cell"><p>The count matrix then stores how often every letter occurs at every position:</p>
+<div class="math-display">$$
+C_{a,j} = \sum_{i=1}^{m}
+\begin{cases}
+1, &amp; \text{if sequence } i \text{ has letter } a \text{ at position } j \\
+0, &amp; \text{otherwise}
+\end{cases}
+$$</div>
+<p>Each column in the matrix is a dictionary with one entry per alphabet letter.</p></section>
+<section class="notebook-cell"><div class="cell-prompt">In [5]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">get_count_matrix</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">):</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">count_matrix</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">assert_equal_length_strings</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">alphabet</span><span class="p">:</span>
+            <span class="n">counts</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">sequences</span><span class="p">:</span>
+            <span class="n">letter</span> <span class="o">=</span> <span class="n">seq</span><span class="p">[</span><span class="n">position</span><span class="p">]</span>
+            <span class="n">counts</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">count_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">count_matrix</span>
+</code></pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [6]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">get_count_matrix</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;XXXXY&quot;</span><span class="p">,</span> <span class="s2">&quot;XYXYX&quot;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div><div class="outputs"><pre class="output-text">[{&#x27;X&#x27;: 2, &#x27;Y&#x27;: 0, &#x27;Z&#x27;: 0},
+ {&#x27;X&#x27;: 1, &#x27;Y&#x27;: 1, &#x27;Z&#x27;: 0},
+ {&#x27;X&#x27;: 2, &#x27;Y&#x27;: 0, &#x27;Z&#x27;: 0},
+ {&#x27;X&#x27;: 1, &#x27;Y&#x27;: 1, &#x27;Z&#x27;: 0},
+ {&#x27;X&#x27;: 1, &#x27;Y&#x27;: 1, &#x27;Z&#x27;: 0}]</pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [7]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="c1"># should fail with ValueError</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">get_count_matrix</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;XXXXYZ&quot;</span><span class="p">,</span> <span class="s2">&quot;XYXYX&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+<span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;failed successfully&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;Expected ValueError&quot;</span><span class="p">)</span>
+</code></pre></div><div class="outputs"><pre class="output-text">failed successfully</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Frequency Matrix</span></summary><div class="section-content">
+<section class="markdown-cell"><p>The frequency matrix is calculated from the count matrix:</p>
+<div class="math-display">$$
+F_{a,j} = \frac{C_{a,j}}{m}
+$$</div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [8]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">get_frequency_matrix</span><span class="p">(</span><span class="n">count_matrix</span><span class="p">):</span>
+    <span class="n">frequency_matrix</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">counts</span> <span class="ow">in</span> <span class="n">count_matrix</span><span class="p">:</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">frequencies</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">:</span>
+            <span class="n">frequencies</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span>
+        <span class="n">frequency_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frequencies</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">frequency_matrix</span>
+</code></pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [9]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">count_matrix</span> <span class="o">=</span> <span class="n">get_count_matrix</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;XXX&quot;</span><span class="p">,</span> <span class="s2">&quot;YYY&quot;</span><span class="p">,</span> <span class="s2">&quot;XYX&quot;</span><span class="p">,</span> <span class="s2">&quot;YYX&quot;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">get_frequency_matrix</span><span class="p">(</span><span class="n">count_matrix</span><span class="p">)</span>
+</code></pre></div><div class="outputs"><pre class="output-text">[{&#x27;X&#x27;: 0.5, &#x27;Y&#x27;: 0.5}, {&#x27;X&#x27;: 0.25, &#x27;Y&#x27;: 0.75}, {&#x27;X&#x27;: 0.75, &#x27;Y&#x27;: 0.25}]</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Scoring Matrix</span></summary><div class="section-content">
+<section class="markdown-cell"><p>The final position-specific score is the natural logarithm of the observed frequency divided by the background probability:</p>
+<div class="math-display">$$
+M_{a,j} =
+\begin{cases}
+\ln\left(\frac{F_{a,j}}{B_a}\right), &amp; \text{if } F_{a,j} &gt; 0 \\
+-\infty, &amp; \text{if } F_{a,j} = 0
+\end{cases}
+$$</div>
+<p>The corresponding code uses $\verb|math.log|$ for the natural logarithm. If a letter was never observed in a column, the score is set to $\verb|-inf|$.</p></section>
+<section class="notebook-cell"><div class="cell-prompt">In [10]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">get_scoring_matrix</span><span class="p">(</span><span class="n">frequency_matrix</span><span class="p">,</span> <span class="n">background_probability</span><span class="p">):</span>
+    <span class="n">scoring_matrix</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">frequencies</span> <span class="ow">in</span> <span class="n">frequency_matrix</span><span class="p">:</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">frequencies</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">frequencies</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">scores</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scores</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+                    <span class="n">frequencies</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span> <span class="o">/</span> <span class="n">background_probability</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span>
+                <span class="p">)</span>
+        <span class="n">scoring_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">scoring_matrix</span>
+</code></pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [11]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">cnt_matrix</span> <span class="o">=</span> <span class="n">get_count_matrix</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;XXYXX&quot;</span><span class="p">,</span> <span class="s2">&quot;YYYYY&quot;</span><span class="p">,</span> <span class="s2">&quot;XYXXX&quot;</span><span class="p">,</span> <span class="s2">&quot;YYXYX&quot;</span><span class="p">,</span> <span class="s2">&quot;YXXYX&quot;</span><span class="p">,</span> <span class="s2">&quot;XXXXZ&quot;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">cnt_matrix</span>
+</code></pre></div><div class="outputs"><pre class="output-text">[{&#x27;X&#x27;: 3, &#x27;Y&#x27;: 3, &#x27;Z&#x27;: 0},
+ {&#x27;X&#x27;: 3, &#x27;Y&#x27;: 3, &#x27;Z&#x27;: 0},
+ {&#x27;X&#x27;: 4, &#x27;Y&#x27;: 2, &#x27;Z&#x27;: 0},
+ {&#x27;X&#x27;: 3, &#x27;Y&#x27;: 3, &#x27;Z&#x27;: 0},
+ {&#x27;X&#x27;: 4, &#x27;Y&#x27;: 1, &#x27;Z&#x27;: 1}]</pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [12]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">freq_matrix</span> <span class="o">=</span> <span class="n">get_frequency_matrix</span><span class="p">(</span><span class="n">cnt_matrix</span><span class="p">)</span>
+<span class="n">get_scoring_matrix</span><span class="p">(</span><span class="n">freq_matrix</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;X&quot;</span><span class="p">:</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">:</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">})</span>
+</code></pre></div><div class="outputs"><pre class="output-text">[{&#x27;X&#x27;: 0.4054651081081644, &#x27;Y&#x27;: 0.4054651081081644, &#x27;Z&#x27;: -inf},
+ {&#x27;X&#x27;: 0.4054651081081644, &#x27;Y&#x27;: 0.4054651081081644, &#x27;Z&#x27;: -inf},
+ {&#x27;X&#x27;: 0.6931471805599453, &#x27;Y&#x27;: 0.0, &#x27;Z&#x27;: -inf},
+ {&#x27;X&#x27;: 0.4054651081081644, &#x27;Y&#x27;: 0.4054651081081644, &#x27;Z&#x27;: -inf},
+ {&#x27;X&#x27;: 0.6931471805599453, &#x27;Y&#x27;: -0.6931471805599453, &#x27;Z&#x27;: -0.6931471805599453}]</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Sequence Scoring</span></summary><div class="section-content">
+<section class="markdown-cell"><p>The score of a new sequence \(x\) is the sum of the score belonging to the observed letter at each position:</p>
+<div class="math-display">$$
+S(x) = \sum_{j=1}^{L} M_{x_j,j}
+$$</div>
+<p>The scoring function implements this by adding exactly one matrix value per position. It also checks that the query sequence has the same length as the scoring matrix.</p></section>
+<section class="notebook-cell"><div class="cell-prompt">In [13]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">score_sequence</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">scoring_matrix</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">scoring_matrix</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sequence length must match the scoring matrix length&quot;</span><span class="p">)</span>
+
+    <span class="n">score</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">position</span><span class="p">,</span> <span class="n">letter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sequence</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">letter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">scoring_matrix</span><span class="p">[</span><span class="n">position</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown letter </span><span class="si">{</span><span class="n">letter</span><span class="si">}</span><span class="s2"> at position </span><span class="si">{</span><span class="n">position</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">score</span> <span class="o">+=</span> <span class="n">scoring_matrix</span><span class="p">[</span><span class="n">position</span><span class="p">][</span><span class="n">letter</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">score</span>
+</code></pre></div></div></section>
+<section class="notebook-cell"><div class="cell-prompt">In [14]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">score_sequence</span><span class="p">(</span><span class="s2">&quot;XYXYX&quot;</span><span class="p">,</span> <span class="n">get_scoring_matrix</span><span class="p">(</span><span class="n">freq_matrix</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;X&quot;</span><span class="p">:</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">:</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">}))</span>
+</code></pre></div><div class="outputs"><pre class="output-text">2.6026896854443837</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Testing Helper</span></summary><div class="section-content">
+<section class="markdown-cell"><p>I also have an output helper that prints the internal matrix representation as markdown-style tables.</p></section>
+<section class="notebook-cell"><div class="cell-prompt">In [15]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="k">def</span><span class="w"> </span><span class="nf">display_matrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">:</span>
+        <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">letter</span><span class="p">:</span> <span class="n">column</span><span class="p">[</span><span class="n">letter</span><span class="p">]))</span>
+
+    <span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">headers</span>
+    <span class="n">separator</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;---&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;---:&quot;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;| &quot;</span> <span class="o">+</span> <span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; |&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;| &quot;</span> <span class="o">+</span> <span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">separator</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; |&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">alphabet</span><span class="p">:</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="p">[</span><span class="n">letter</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">column</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">decimals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">decimals</span><span class="si">}</span><span class="s2">f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;| &quot;</span> <span class="o">+</span> <span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; |&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_test</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">query_sequences</span><span class="p">):</span>
+    <span class="n">sequences</span> <span class="o">=</span> <span class="n">read_sequences</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">alphabet</span> <span class="o">=</span> <span class="n">get_alphabet</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
+    <span class="n">background_probability</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">alphabet</span><span class="p">:</span>
+        <span class="n">background_probability</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span>
+
+    <span class="n">count_matrix</span> <span class="o">=</span> <span class="n">get_count_matrix</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">)</span>
+    <span class="n">frequency_matrix</span> <span class="o">=</span> <span class="n">get_frequency_matrix</span><span class="p">(</span><span class="n">count_matrix</span><span class="p">)</span>
+    <span class="n">scoring_matrix</span> <span class="o">=</span> <span class="n">get_scoring_matrix</span><span class="p">(</span><span class="n">frequency_matrix</span><span class="p">,</span> <span class="n">background_probability</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Count matrix from </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">display_matrix</span><span class="p">(</span><span class="n">count_matrix</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frequency matrix from </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">display_matrix</span><span class="p">(</span><span class="n">frequency_matrix</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scoring matrix from </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">display_matrix</span><span class="p">(</span><span class="n">scoring_matrix</span><span class="p">,</span> <span class="n">alphabet</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Example scores&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">sequence</span> <span class="ow">in</span> <span class="n">query_sequences</span><span class="p">:</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">score_sequence</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">scoring_matrix</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sequence</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">score</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Test Inputs</span></summary><div class="section-content">
+<details class="collapsible-section level-3" open><summary><span class="section-title">seq2.txt</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [16]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">run_test</span><span class="p">(</span><span class="s2">&quot;../seq2.txt&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;ACGTA&quot;</span><span class="p">,</span> <span class="s2">&quot;ACGTT&quot;</span><span class="p">])</span>
+</code></pre></div><div class="outputs"><pre class="output-text">Count matrix from ../seq2.txt
+|  | A | C | G | T | A |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A | 5 | 0 | 0 | 1 | 5 |
+| C | 0 | 5 | 1 | 0 | 0 |
+| G | 0 | 1 | 5 | 0 | 0 |
+| T | 1 | 0 | 0 | 5 | 1 |
+
+Frequency matrix from ../seq2.txt
+|  | A | C | G | T | A |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A | 0.83 | 0.00 | 0.00 | 0.17 | 0.83 |
+| C | 0.00 | 0.83 | 0.17 | 0.00 | 0.00 |
+| G | 0.00 | 0.17 | 0.83 | 0.00 | 0.00 |
+| T | 0.17 | 0.00 | 0.00 | 0.83 | 0.17 |
+
+Scoring matrix from ../seq2.txt
+|  | A | C | G | T | A |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A | 1.204 | -inf | -inf | -0.405 | 1.204 |
+| C | -inf | 1.204 | -0.405 | -inf | -inf |
+| G | -inf | -0.405 | 1.204 | -inf | -inf |
+| T | -0.405 | -inf | -inf | 1.204 | -0.405 |
+
+Example scores
+ACGTA: 6.020
+ACGTT: 4.410</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-3" open><summary><span class="section-title">seq1.txt</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [17]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">run_test</span><span class="p">(</span><span class="s2">&quot;../seq1.txt&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;ACGTA&quot;</span><span class="p">,</span> <span class="s2">&quot;ACGTT&quot;</span><span class="p">])</span>
+</code></pre></div><div class="outputs"><pre class="output-text">Count matrix from ../seq1.txt
+|  | A | C | G | T | A |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A | 17 | 1 | 2 | 4 | 17 |
+| C | 2 | 19 | 3 | 1 | 1 |
+| G | 3 | 2 | 18 | 1 | 1 |
+| T | 2 | 2 | 1 | 18 | 5 |
+
+Frequency matrix from ../seq1.txt
+|  | A | C | G | T | A |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A | 0.71 | 0.04 | 0.08 | 0.17 | 0.71 |
+| C | 0.08 | 0.79 | 0.12 | 0.04 | 0.04 |
+| G | 0.12 | 0.08 | 0.75 | 0.04 | 0.04 |
+| T | 0.08 | 0.08 | 0.04 | 0.75 | 0.21 |
+
+Scoring matrix from ../seq1.txt
+|  | A | C | G | T | A |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A | 1.041 | -1.792 | -1.099 | -0.405 | 1.041 |
+| C | -1.099 | 1.153 | -0.693 | -1.792 | -1.792 |
+| G | -0.693 | -1.099 | 1.099 | -1.792 | -1.792 |
+| T | -1.099 | -1.099 | -1.792 | 1.099 | -0.182 |
+
+Example scores
+ACGTA: 5.433
+ACGTT: 4.209</pre></div></div></section>
+</div></details>
+<details class="collapsible-section level-3" open><summary><span class="section-title">seq3.txt</span></summary><div class="section-content">
+<section class="notebook-cell"><div class="cell-prompt">In [18]</div><div class="cell-main"><div class="code-cell"><pre class="highlight"><code><span class="n">run_test</span><span class="p">(</span><span class="s2">&quot;../seq3.txt&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;MKTWF&quot;</span><span class="p">,</span> <span class="s2">&quot;MKTWY&quot;</span><span class="p">,</span> <span class="s2">&quot;MKAWF&quot;</span><span class="p">])</span>
+</code></pre></div><div class="outputs"><pre class="output-text">Count matrix from ../seq3.txt
+|  | M | K | T | W | F |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A | 0 | 0 | 1 | 0 | 0 |
+| F | 0 | 0 | 0 | 1 | 5 |
+| K | 0 | 5 | 0 | 0 | 0 |
+| L | 1 | 0 | 0 | 0 | 0 |
+| M | 5 | 0 | 0 | 0 | 0 |
+| R | 0 | 1 | 0 | 0 | 0 |
+| T | 0 | 0 | 5 | 0 | 0 |
+| W | 0 | 0 | 0 | 5 | 0 |
+| Y | 0 | 0 | 0 | 0 | 1 |
+
+Frequency matrix from ../seq3.txt
+|  | M | K | T | W | F |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A | 0.00 | 0.00 | 0.17 | 0.00 | 0.00 |
+| F | 0.00 | 0.00 | 0.00 | 0.17 | 0.83 |
+| K | 0.00 | 0.83 | 0.00 | 0.00 | 0.00 |
+| L | 0.17 | 0.00 | 0.00 | 0.00 | 0.00 |
+| M | 0.83 | 0.00 | 0.00 | 0.00 | 0.00 |
+| R | 0.00 | 0.17 | 0.00 | 0.00 | 0.00 |
+| T | 0.00 | 0.00 | 0.83 | 0.00 | 0.00 |
+| W | 0.00 | 0.00 | 0.00 | 0.83 | 0.00 |
+| Y | 0.00 | 0.00 | 0.00 | 0.00 | 0.17 |
+
+Scoring matrix from ../seq3.txt
+|  | M | K | T | W | F |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A | -inf | -inf | 0.405 | -inf | -inf |
+| F | -inf | -inf | -inf | 0.405 | 2.015 |
+| K | -inf | 2.015 | -inf | -inf | -inf |
+| L | 0.405 | -inf | -inf | -inf | -inf |
+| M | 2.015 | -inf | -inf | -inf | -inf |
+| R | -inf | 0.405 | -inf | -inf | -inf |
+| T | -inf | -inf | 2.015 | -inf | -inf |
+| W | -inf | -inf | -inf | 2.015 | -inf |
+| Y | -inf | -inf | -inf | -inf | 0.405 |
+
+Example scores
+MKTWF: 10.075
+MKTWY: 8.465
+MKAWF: 8.465</pre></div></div></section>
+</div></details>
+</div></details>
+<details class="collapsible-section level-2" open><summary><span class="section-title">Manual Workthrough</span></summary><div class="section-content">
+<details class="collapsible-section level-3" open><summary><span class="section-title">seq2.txt</span></summary><div class="section-content">
+<section class="markdown-cell"><p>We will do a manual trace for the first example:</p>
+<div class="table-wrap"><table><thead><tr><th class="align-right">Index</th><th>Sequence</th></tr></thead><tbody><tr><td class="align-right">1</td><td><code>ACGTA</code></td></tr><tr><td class="align-right">2</td><td><code>ACGTT</code></td></tr><tr><td class="align-right">3</td><td><code>ACGAA</code></td></tr><tr><td class="align-right">4</td><td><code>TCGTA</code></td></tr><tr><td class="align-right">5</td><td><code>ACCTA</code></td></tr><tr><td class="align-right">6</td><td><code>AGGTA</code></td></tr></tbody></table></div>
+<p>The count matrix stores one dictionary per position. Written as a table, the same values are:</p>
+<div class="table-wrap"><table><thead><tr><th>Letter</th><th class="align-right">1 (A)</th><th class="align-right">2 (C)</th><th class="align-right">3 (G)</th><th class="align-right">4 (T)</th><th class="align-right">5 (A)</th></tr></thead><tbody><tr><td>A</td><td class="align-right">5</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">1</td><td class="align-right">5</td></tr><tr><td>C</td><td class="align-right">0</td><td class="align-right">5</td><td class="align-right">1</td><td class="align-right">0</td><td class="align-right">0</td></tr><tr><td>G</td><td class="align-right">0</td><td class="align-right">1</td><td class="align-right">5</td><td class="align-right">0</td><td class="align-right">0</td></tr><tr><td>T</td><td class="align-right">1</td><td class="align-right">0</td><td class="align-right">0</td><td class="align-right">5</td><td class="align-right">1</td></tr></tbody></table></div>
+<p>The frequency matrix divides every count by the number of sequences. Here $m=6$:</p>
+<div class="math-display">$$
+F_{A,1}=\frac{5}{6}=0.83
+$$</div>
+<div class="math-display">$$
+F_{T,1}=\frac{1}{6}=0.17
+$$</div>
+<div class="table-wrap"><table><thead><tr><th>Letter</th><th class="align-right">1 (A)</th><th class="align-right">2 (C)</th><th class="align-right">3 (G)</th><th class="align-right">4 (T)</th><th class="align-right">5 (A)</th></tr></thead><tbody><tr><td>A</td><td class="align-right">0.83</td><td class="align-right">0.00</td><td class="align-right">0.00</td><td class="align-right">0.17</td><td class="align-right">0.83</td></tr><tr><td>C</td><td class="align-right">0.00</td><td class="align-right">0.83</td><td class="align-right">0.17</td><td class="align-right">0.00</td><td class="align-right">0.00</td></tr><tr><td>G</td><td class="align-right">0.00</td><td class="align-right">0.17</td><td class="align-right">0.83</td><td class="align-right">0.00</td><td class="align-right">0.00</td></tr><tr><td>T</td><td class="align-right">0.17</td><td class="align-right">0.00</td><td class="align-right">0.00</td><td class="align-right">0.83</td><td class="align-right">0.17</td></tr></tbody></table></div>
+<p>The background probability is uniform, so for DNA $B_a=0.25$. A common letter gets a positive log score:</p>
+<div class="math-display">$$
+M_{A,1}=\ln\left(\frac{5/6}{0.25}\right)=\ln\left(\frac{10}{3}\right)\approx 1.204
+$$</div>
+<p>A less common observed letter gets a negative score:</p>
+<div class="math-display">$$
+M_{T,1}=\ln\left(\frac{1/6}{0.25}\right)=\ln\left(\frac{2}{3}\right)\approx -0.405
+$$</div>
+<p>A letter that never occurred at a position gets $-\infty$.</p>
+<div class="table-wrap"><table><thead><tr><th>Letter</th><th class="align-right">1 (A)</th><th class="align-right">2 (C)</th><th class="align-right">3 (G)</th><th class="align-right">4 (T)</th><th class="align-right">5 (A)</th></tr></thead><tbody><tr><td>A</td><td class="align-right">1.204</td><td class="align-right">$-\infty$</td><td class="align-right">$-\infty$</td><td class="align-right">-0.405</td><td class="align-right">1.204</td></tr><tr><td>C</td><td class="align-right">$-\infty$</td><td class="align-right">1.204</td><td class="align-right">-0.405</td><td class="align-right">$-\infty$</td><td class="align-right">$-\infty$</td></tr><tr><td>G</td><td class="align-right">$-\infty$</td><td class="align-right">-0.405</td><td class="align-right">1.204</td><td class="align-right">$-\infty$</td><td class="align-right">$-\infty$</td></tr><tr><td>T</td><td class="align-right">-0.405</td><td class="align-right">$-\infty$</td><td class="align-right">$-\infty$</td><td class="align-right">1.204</td><td class="align-right">-0.405</td></tr></tbody></table></div>
+<p>For <code>ACGTA</code>, all five letters are the most frequent letters at their positions:</p>
+<div class="math-display">$$
+S(\texttt{ACGTA})=1.204+1.204+1.204+1.204+1.204=6.020
+$$</div>
+<p>For <code>ACGTT</code>, the last position uses <code>T</code> instead of the more frequent <code>A</code>:</p>
+<div class="math-display">$$
+S(\texttt{ACGTT})=1.204+1.204+1.204+1.204-0.405=4.410
+$$</div>
+<div class="table-wrap"><table><thead><tr><th>Sequence</th><th class="align-right">Score</th></tr></thead><tbody><tr><td><code>ACGTA</code></td><td class="align-right">6.020</td></tr><tr><td><code>ACGTT</code></td><td class="align-right">4.410</td></tr></tbody></table></div>
+<p>which is the same result as the code.</p></section>
+</div></details>
+</div></details>
+</main>
+</body>
+</html>
